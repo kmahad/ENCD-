@@ -1,0 +1,29 @@
+@import url("./index.base.css");
+
+.pick-btn {
+  width: 100%;
+}
+
+.btn--secondary {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.btn--secondary:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--surface-hover);
+}
+
+.file-info__path {
+  margin-top: 0.35rem !important;
+  font-size: 0.8rem !important;
+  color: var(--text-muted) !important;
+  word-break: break-all;
+}
+
+.file-info__meta {
+  margin-top: 0.25rem !important;
+  font-size: 0.85rem !important;
+  color: var(--text-muted) !important;
+}

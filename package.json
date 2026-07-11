@@ -1,0 +1,16 @@
+{
+  "name": "encrypter",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Free file and folder encryption — web and desktop",
+  "scripts": {
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "dev:web": "pnpm --filter @encrypter/web dev",
+    "dev:desktop": "pnpm --filter @encrypter/desktop tauri dev",
+    "build:web": "pnpm --filter @encrypter/web build",
+    "build:desktop": "pnpm --filter @encrypter/desktop tauri build"
+  },
+  "keywords": ["encryption", "file-encryption", "aes", "argon2"],
+  "license": "MIT"
+}

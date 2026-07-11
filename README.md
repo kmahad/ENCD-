@@ -1,0 +1,114 @@
+# Encrypter
+
+Free, local file and folder encryption for sharing with friends and coworkers.
+
+Encrypt anything — PDFs, images, documents, or entire folders — with a password. Send the `.enc` file through email, WhatsApp, Google Drive, or USB. Your friend decrypts it with the same password using this app (web or desktop).
+
+**Everything runs on your device.** No accounts, no cloud upload, no paid services.
+
+## Features
+
+- Encrypt single files or whole folders
+- Decrypt with password — wrong password is rejected safely
+- Shared `.enc` format works across **web** and **desktop**
+- AES-256-GCM encryption + Argon2id key derivation
+- 100% free and open source
+
+## Quick start
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) 18+
+- [pnpm](https://pnpm.io/): `npm install -g pnpm`
+- For desktop builds: [Rust](https://rustup.rs/)
+
+### Install dependencies
+
+```bash
+pnpm install
+```
+
+### Run the website (development)
+
+```bash
+pnpm dev:web
+```
+
+Open http://localhost:5173
+
+### Run the desktop app (development)
+
+```bash
+pnpm dev:desktop
+```
+
+### Build for production
+
+```bash
+# Web static site
+pnpm build:web
+
+# Desktop installer (Windows .msi/.exe)
+pnpm build:desktop
+```
+
+## How to share encrypted files
+
+1. **Encrypt** your file or folder and set a strong password (8+ characters).
+2. **Download** the `.enc` file.
+3. **Send** the `.enc` file to your friend (any method you like).
+4. **Share the password separately** — e.g. phone call or a different chat app.
+5. Your friend opens the **web app** or **desktop app**, uploads/opens the `.enc` file, enters the password, and downloads the original content.
+
+> **Tip:** Never send the password in the same message as the file.
+
+## Deploy the website (free)
+
+### GitHub Pages
+
+1. Push this repo to GitHub.
+2. Build the web app: `pnpm build:web`
+3. Deploy `apps/web/dist` to GitHub Pages (see `.github/workflows/deploy.yml`).
+
+Or manually:
+
+```bash
+cd apps/web
+pnpm build
+# Upload dist/ to any static host (Netlify, Cloudflare Pages, etc.)
+```
+
+### Desktop releases
+
+Build the desktop app and upload installers to **GitHub Releases** (free):
+
+```bash
+pnpm build:desktop
+# Installers are in apps/desktop/src-tauri/target/release/bundle/
+```
+
+## Project structure
+
+```
+encrypter/
+├── packages/crypto-core/   # Shared encryption library (.enc format)
+├── apps/web/               # Browser app (Vite + React)
+└── apps/desktop/           # Desktop app (Tauri + React)
+```
+
+## Security
+
+| Property | Detail |
+|----------|--------|
+| Cipher | AES-256-GCM (authenticated) |
+| Key derivation | Argon2id (64 MB memory, 3 iterations) |
+| Password storage | Never stored or transmitted |
+| Server | None — all crypto is client-side |
+
+## Web limitations
+
+Browsers load entire files into memory. For files or folders **larger than ~500 MB**, use the **desktop app** for better performance and reliability.
+
+## License
+
+MIT
