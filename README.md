@@ -98,12 +98,12 @@ encrypter/
 
 ## Security
 
-| Property | Detail |
-|----------|--------|
-| Cipher | AES-256-GCM (authenticated) |
-| Key derivation | Argon2id (64 MB memory, 3 iterations) |
-| Password storage | Never stored or transmitted |
-| Server | None — all crypto is client-side |
+| Property         | Detail                                |
+| ---------------- | ------------------------------------- |
+| Cipher           | AES-256-GCM (authenticated)           |
+| Key derivation   | Argon2id (64 MB memory, 3 iterations) |
+| Password storage | Never stored or transmitted           |
+| Server           | None — all crypto is client-side      |
 
 ## Web limitations
 

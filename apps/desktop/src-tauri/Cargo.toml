@@ -5,6 +5,10 @@ description = "Free file and folder encryption"
 authors = ["Encrypter"]
 edition = "2021"
 
+[package.metadata.windows]
+subsystem = "windows"
+
+
 [lib]
 name = "encrypter_desktop_lib"
 crate-type = ["lib", "cdylib", "staticlib"]
