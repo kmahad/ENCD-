@@ -30,7 +30,9 @@ export async function pickEncFile(): Promise<string | null> {
   return typeof path === "string" ? path : null;
 }
 
-export async function saveEncFile(suggestedName: string): Promise<string | null> {
+export async function saveEncFile(
+  suggestedName: string,
+): Promise<string | null> {
   const path = await save({
     defaultPath: suggestedName,
     filters: [{ name: "Encrypted", extensions: ["enc"] }],
@@ -40,7 +42,7 @@ export async function saveEncFile(suggestedName: string): Promise<string | null>
 
 export async function saveDecryptedFile(
   suggestedName: string,
-  extension: string
+  extension: string,
 ): Promise<string | null> {
   const path = await save({
     defaultPath: suggestedName,
@@ -62,7 +64,10 @@ export async function readFileBytes(path: string): Promise<Uint8Array> {
   return new Uint8Array(data);
 }
 
-export async function writeFileBytes(path: string, data: Uint8Array): Promise<void> {
+export async function writeFileBytes(
+  path: string,
+  data: Uint8Array,
+): Promise<void> {
   await invoke("write_file_bytes", { path, data: Array.from(data) });
 }
 
@@ -72,7 +77,7 @@ export interface FolderEntry {
 }
 
 export async function readFolderEntries(
-  folderPath: string
+  folderPath: string,
 ): Promise<{ path: string; data: Uint8Array }[]> {
   const entries = await invoke<FolderEntry[]>("read_folder_entries", {
     folderPath,
@@ -86,7 +91,7 @@ export async function readFolderEntries(
 export async function writeFolderEntries(
   outputDir: string,
   folderName: string,
-  entries: { path: string; data: Uint8Array }[]
+  entries: { path: string; data: Uint8Array }[],
 ): Promise<string> {
   return invoke<string>("write_folder_entries", {
     outputDir,
@@ -102,6 +107,20 @@ export async function getFileName(path: string): Promise<string> {
   return invoke<string>("get_file_name", { path });
 }
 
-export async function checkPath(path: string): Promise<{ path: string; is_dir: boolean }> {
+export async function checkPath(
+  path: string,
+): Promise<{ path: string; is_dir: boolean }> {
   return invoke("check_path", { path });
+}
+
+export async function openContainingFolder(path: string): Promise<void> {
+  return invoke("open_containing_folder", { path });
+}
+
+export async function openFileInExplorer(path: string): Promise<void> {
+  return invoke("open_file_in_explorer", { path });
+}
+
+export async function copyToClipboard(text: string): Promise<void> {
+  return navigator.clipboard.writeText(text);
 }
