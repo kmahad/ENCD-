@@ -95,24 +95,11 @@ export default function App() {
             <a
               href={getDownloadLink(userOS)}
               download
-              className="btn btn--secondary btn--sm"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "0.4rem",
-                padding: "0.4rem 0.8rem",
-                fontSize: "0.85rem",
-                borderRadius: "8px",
-                border: "1px solid var(--border-focus)",
-                background: "rgba(0, 210, 255, 0.08)",
-                color: "#00d2ff",
-                textDecoration: "none",
-                fontWeight: 600,
-                transition: "all 0.2s ease",
-              }}
+              className="download-btn-nav"
             >
               📥 {getOSLabel(userOS)}
             </a>
+
 
             <div className="profile-badge">
               <div className="profile-avatar">
@@ -179,60 +166,21 @@ export default function App() {
               <a
                 href="./downloads/Securitas_File_Lock_Setup.exe"
                 download
-                style={{
-                  padding: "0.5rem 1rem",
-                  borderRadius: "8px",
-                  background:
-                    "linear-gradient(90deg, rgba(0, 210, 255, 0.1) 0%, rgba(168, 0, 255, 0.1) 100%)",
-                  border: "1px solid var(--border)",
-                  color: "var(--text)",
-                  textDecoration: "none",
-                  fontSize: "0.85rem",
-                  fontWeight: 600,
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                }}
+                className="download-btn-footer"
               >
                 🏁 Windows (.exe)
               </a>
               <a
                 href="./downloads/Securitas_File_Lock.dmg"
                 download
-                style={{
-                  padding: "0.5rem 1rem",
-                  borderRadius: "8px",
-                  background:
-                    "linear-gradient(90deg, rgba(0, 210, 255, 0.1) 0%, rgba(168, 0, 255, 0.1) 100%)",
-                  border: "1px solid var(--border)",
-                  color: "var(--text)",
-                  textDecoration: "none",
-                  fontSize: "0.85rem",
-                  fontWeight: 600,
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                }}
+                className="download-btn-footer"
               >
                 🍎 macOS (.dmg)
               </a>
               <a
                 href="./downloads/Securitas_File_Lock.deb"
                 download
-                style={{
-                  padding: "0.5rem 1rem",
-                  borderRadius: "8px",
-                  background:
-                    "linear-gradient(90deg, rgba(0, 210, 255, 0.1) 0%, rgba(168, 0, 255, 0.1) 100%)",
-                  border: "1px solid var(--border)",
-                  color: "var(--text)",
-                  textDecoration: "none",
-                  fontSize: "0.85rem",
-                  fontWeight: 600,
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                }}
+                className="download-btn-footer"
               >
                 🐧 Linux (.deb)
               </a>
