@@ -28,7 +28,10 @@ body {
   margin: 0;
   min-height: 100vh;
   font-family: var(--font);
-  background: radial-gradient(circle at 50% 0%, #171c2c 0%, #07090e 80%);
+  background: #07090e;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0, 210, 255, 0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(168, 0, 255, 0.05) 0%, transparent 50%);
   color: var(--text);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
@@ -40,22 +43,45 @@ body {
 }
 
 .app {
-  max-width: 780px;
-  margin: 0 auto;
-  padding: 2rem 1.5rem 4rem;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  width: 100%;
 }
 
-/* Header & Brand Navbar */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.main-content {
+  flex: 1;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 5rem;
+}
+
+/* Header & Brand Sticky Navbar */
 .header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  background: rgba(11, 15, 25, 0.7);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+}
+
+.header__container {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 2.5rem;
-  padding-bottom: 1.25rem;
-  border-bottom: 1px solid var(--border);
+  padding: 1.1rem 0;
 }
 
 .header__brand {
@@ -92,33 +118,29 @@ body {
 
 .nav-link {
   background: none;
-  border: none;
+  border: 1px solid transparent;
   color: var(--text-muted);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  padding: 0.5rem 0.25rem;
-  position: relative;
-  transition: color 0.2s ease;
+  padding: 0.45rem 1rem;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 999px;
 }
 
 .nav-link:hover {
   color: var(--text);
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.05);
 }
 
 .nav-link--active {
   color: #00d2ff;
-}
-
-.nav-link--active::after {
-  content: "";
-  position: absolute;
-  bottom: -1.25rem;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: #00d2ff;
-  box-shadow: 0 0 10px #00d2ff;
+  background: rgba(0, 210, 255, 0.06);
+  border-color: rgba(0, 210, 255, 0.2);
+  box-shadow: 
+    0 0 16px rgba(0, 210, 255, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 /* User Profile Badge */
@@ -1010,19 +1032,79 @@ body {
 /* Footer Section */
 .footer {
   margin-top: auto;
-  padding-top: 2.5rem;
-  text-align: center;
+  padding: 3rem 0 2rem;
+  background: rgba(8, 10, 16, 0.4);
+  border-top: 1px solid var(--border);
+  position: relative;
+  width: 100%;
 }
 
-.footer p {
-  margin: 0;
+.footer::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0, 210, 255, 0.2), transparent);
+}
+
+.footer__container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.footer__brand-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  text-align: left;
+}
+
+.footer__brand-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: linear-gradient(90deg, #00d2ff, #a800ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.footer__brand-desc {
   font-size: 0.85rem;
   color: var(--text-muted);
+  line-height: 1.6;
+  margin: 0;
 }
 
-.footer__sub {
-  margin-top: 0.5rem !important;
+.footer__bottom {
+  margin-top: 2rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.footer__copyright {
   font-size: 0.8rem !important;
+  color: var(--text-muted) !important;
+  margin: 0 !important;
+}
+
+.footer__badge-note {
+  font-size: 0.8rem !important;
+  color: #00d2ff !important;
+  background: rgba(0, 210, 255, 0.06);
+  border: 1px solid rgba(0, 210, 255, 0.15);
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-weight: 500;
+  margin: 0 !important;
 }
 
 .pick-btn {
