@@ -283,7 +283,7 @@ export function EncryptPage() {
   );
 }
 
-export function mapEncrypterError(err: unknown): string {
+export function mapEncrypterError(err: any): string {
   if (err instanceof EncrypterError) return err.message;
   if (err instanceof Error) return err.message;
   return "Something went wrong";

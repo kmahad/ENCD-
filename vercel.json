@@ -1,5 +1,5 @@
 {
-  "buildCommand": "pnpm --filter @encrypter/web build",
+  "buildCommand": "pnpm --filter @encrypter/crypto-core build && pnpm --filter @encrypter/web build",
   "outputDirectory": "apps/web/dist",
   "installCommand": "pnpm install",
   "framework": "vite",
