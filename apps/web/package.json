@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@encrypter/crypto-core": "workspace:*",
+    "@vercel/analytics": "^2.0.1",
     "fflate": "^0.8.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
