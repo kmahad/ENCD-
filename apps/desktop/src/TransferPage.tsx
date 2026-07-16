@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import Peer from "peerjs";
 import { DropZone } from "./components/DropZone";
 import { ProgressBar } from "./components/ProgressBar";
-import { formatBytes } from "./utils";
+import { formatBytes, downloadBlob } from "./utils";
 import {
   pickFile,
   readFileBytes,
@@ -10,6 +10,7 @@ import {
   writeFileBytes,
   getFileName,
   copyToClipboard,
+  isTauri,
 } from "./tauri";
 
 type Mode = "send" | "receive";
@@ -22,7 +23,10 @@ export function TransferPage() {
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState("");
   const [transferProgress, setTransferProgress] = useState(0);
-  const [receivedFile, setReceivedFile] = useState<{ name: string; data: Uint8Array } | null>(null);
+  const [receivedFile, setReceivedFile] = useState<{
+    name: string;
+    data: Uint8Array;
+  } | null>(null);
 
   const peerRef = useRef<Peer | null>(null);
   const connectionRef = useRef<any>(null);
@@ -35,7 +39,9 @@ export function TransferPage() {
 
       peer.on("open", (id) => {
         setPeerId(id);
-        setStatus("Waiting for connection... Share your Peer ID with the sender!");
+        setStatus(
+          "Waiting for connection... Share your Peer ID with the sender!",
+        );
       });
 
       peer.on("connection", (conn) => {
@@ -51,7 +57,10 @@ export function TransferPage() {
           if (typeof data === "string" && data.startsWith("fileName:")) {
             fileName = data.split(":")[1];
             setStatus(`Receiving ${fileName}...`);
-          } else if (typeof data === "string" && data.startsWith("totalSize:")) {
+          } else if (
+            typeof data === "string" &&
+            data.startsWith("totalSize:")
+          ) {
             totalSize = parseInt(data.split(":")[1]);
           } else if (data instanceof Uint8Array) {
             receivedChunks.push(data);
@@ -155,7 +164,7 @@ export function TransferPage() {
       connectionRef.current.send(chunk);
       setTransferProgress(Math.round(((i + 1) / totalChunks) * 100));
       // Small delay to avoid overwhelming the connection
-      await new Promise(resolve => setTimeout(resolve, 1));
+      await new Promise((resolve) => setTimeout(resolve, 1));
     }
 
     connectionRef.current.send("done");
@@ -164,10 +173,28 @@ export function TransferPage() {
 
   const handleSaveReceivedFile = async () => {
     if (!receivedFile) return;
-    const savePath = await saveDecryptedFile(receivedFile.name, receivedFile.name.split(".").pop() || "enc");
-    if (!savePath) return;
-    await writeFileBytes(savePath, receivedFile.data);
-    setStatus(`File saved to: ${savePath}`);
+
+    if (isTauri()) {
+      try {
+        const savePath = await saveDecryptedFile(
+          receivedFile.name,
+          receivedFile.name.split(".").pop() || "enc",
+        );
+        if (!savePath) return;
+        await writeFileBytes(savePath, receivedFile.data);
+        setStatus(`File saved to: ${savePath}`);
+      } catch (err) {
+        console.error("Failed to save file with Tauri:", err);
+        setStatus("Failed to save file.");
+      }
+    } else {
+      // Fall back to browser download when Tauri isn't available
+      const blob = new Blob([receivedFile.data], {
+        type: "application/octet-stream",
+      });
+      downloadBlob(blob, receivedFile.name);
+      setStatus("File downloaded!");
+    }
   };
 
   const handleReset = () => {
@@ -187,7 +214,9 @@ export function TransferPage() {
     <section className="panel animate-fade-in">
       <div className="panel__title-area">
         <h2>Transfer Encrypted Files</h2>
-        <p className="panel__subtitle">Peer-to-peer file transfer with end-to-end encryption</p>
+        <p className="panel__subtitle">
+          Peer-to-peer file transfer with end-to-end encryption
+        </p>
       </div>
 
       <div className="mode-tabs">
@@ -216,7 +245,16 @@ export function TransferPage() {
       {mode === "receive" && (
         <div className="settings-card">
           <h3>Your Peer ID</h3>
-          <p className="status-text" style={{ wordBreak: "break-all", fontFamily: "monospace", background: "#1a1a2e", padding: "1rem", borderRadius: "0.5rem" }}>
+          <p
+            className="status-text"
+            style={{
+              wordBreak: "break-all",
+              fontFamily: "monospace",
+              background: "#1a1a2e",
+              padding: "1rem",
+              borderRadius: "0.5rem",
+            }}
+          >
             {peerId || "Generating..."}
           </p>
           <button
@@ -230,8 +268,14 @@ export function TransferPage() {
           >
             📋 Copy Peer ID
           </button>
-          {status && <p className="status-text" style={{ marginTop: "1rem" }}>{status}</p>}
-          {transferProgress > 0 && <ProgressBar value={transferProgress} label="Receiving..." />}
+          {status && (
+            <p className="status-text" style={{ marginTop: "1rem" }}>
+              {status}
+            </p>
+          )}
+          {transferProgress > 0 && (
+            <ProgressBar value={transferProgress} label="Receiving..." />
+          )}
           {receivedFile && (
             <div style={{ marginTop: "1rem" }}>
               <p className="status-text">Received: {receivedFile.name}</p>
@@ -256,7 +300,15 @@ export function TransferPage() {
               value={remotePeerId}
               onChange={(e) => setRemotePeerId(e.target.value)}
               placeholder="Paste recipient's Peer ID here"
-              style={{ width: "100%", padding: "0.75rem", borderRadius: "0.5rem", border: "1px solid #2a2a4a", background: "#1a1a2e", color: "white", marginBottom: "1rem" }}
+              style={{
+                width: "100%",
+                padding: "0.75rem",
+                borderRadius: "0.5rem",
+                border: "1px solid #2a2a4a",
+                background: "#1a1a2e",
+                color: "white",
+                marginBottom: "1rem",
+              }}
             />
             <button
               type="button"
@@ -266,7 +318,11 @@ export function TransferPage() {
             >
               Connect
             </button>
-            {status && <p className="status-text" style={{ marginTop: "1rem" }}>{status}</p>}
+            {status && (
+              <p className="status-text" style={{ marginTop: "1rem" }}>
+                {status}
+              </p>
+            )}
           </div>
 
           {connectionRef.current && (
@@ -280,12 +336,16 @@ export function TransferPage() {
 
               {selectedPath && (
                 <div className="file-info">
-                  <p><strong>{displayName}</strong></p>
+                  <p>
+                    <strong>{displayName}</strong>
+                  </p>
                   <p className="file-info__path">{selectedPath}</p>
                 </div>
               )}
 
-              {transferProgress > 0 && <ProgressBar value={transferProgress} label="Sending..." />}
+              {transferProgress > 0 && (
+                <ProgressBar value={transferProgress} label="Sending..." />
+              )}
 
               <div className="actions">
                 <button
