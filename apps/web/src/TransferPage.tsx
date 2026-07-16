@@ -182,7 +182,7 @@ export function TransferPage() {
         videoRef.current!,
       );
       if (result) {
-        setRemotePeerId(result.text);
+        setRemotePeerId(result.getText());
         setShowScanner(false);
         codeReader.reset();
       }
