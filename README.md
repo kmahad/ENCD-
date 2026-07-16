@@ -68,8 +68,8 @@ pnpm build:desktop
 ### Method 2: Peer-to-Peer (P2P) transfer
 
 1. Both you and your friend open the **web app** or **desktop app** and go to the "Transfer" tab.
-2. The recipient selects "Receive" and shares their **Peer ID** with you.
-3. You select "Send", enter your friend's Peer ID, and connect.
+2. The recipient selects "Receive" — a QR code with their Peer ID will appear for easy sharing, or they can copy the Peer ID manually.
+3. You select "Send", either scan the recipient's QR code or paste their Peer ID manually, and connect.
 4. You select an encrypted file and send it directly to your friend.
 5. Your friend receives the file and decrypts it with the password.
 

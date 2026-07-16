@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import Peer from "peerjs";
+import { QRCodeSVG } from "qrcode.react";
+import { BrowserMultiFormatReader } from "@zxing/library";
 import { DropZone } from "./components/DropZone";
 import { ProgressBar } from "./components/ProgressBar";
 import { formatBytes, downloadBlob } from "./utils";
@@ -27,6 +29,9 @@ export function TransferPage() {
     name: string;
     data: Uint8Array;
   } | null>(null);
+  const [showScanner, setShowScanner] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null);
 
   const peerRef = useRef<Peer | null>(null);
   const connectionRef = useRef<any>(null);
@@ -204,10 +209,44 @@ export function TransferPage() {
     setTransferProgress(0);
     setReceivedFile(null);
     setRemotePeerId("");
+    setShowScanner(false);
     if (connectionRef.current) {
       connectionRef.current.close();
       connectionRef.current = null;
     }
+    if (codeReaderRef.current) {
+      codeReaderRef.current.reset();
+    }
+  };
+
+  const startScanner = async () => {
+    try {
+      setShowScanner(true);
+      const codeReader = new BrowserMultiFormatReader();
+      codeReaderRef.current = codeReader;
+      const result = await codeReader.decodeOnceFromVideoDevice(
+        undefined,
+        videoRef.current!,
+      );
+      if (result) {
+        setRemotePeerId(result.text);
+        setShowScanner(false);
+        codeReader.reset();
+      }
+    } catch (err) {
+      console.error("QR scan error:", err);
+      setStatus(
+        "Error scanning QR code. Please try again or enter Peer ID manually.",
+      );
+      setShowScanner(false);
+    }
+  };
+
+  const stopScanner = () => {
+    if (codeReaderRef.current) {
+      codeReaderRef.current.reset();
+    }
+    setShowScanner(false);
   };
 
   return (
@@ -268,6 +307,27 @@ export function TransferPage() {
           >
             📋 Copy Peer ID
           </button>
+          {peerId && (
+            <div
+              style={{
+                marginTop: "1rem",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                background: "white",
+                padding: "1rem",
+                borderRadius: "0.5rem",
+              }}
+            >
+              <QRCodeSVG value={peerId} size={200} />
+              <p
+                className="status-text"
+                style={{ color: "black", marginTop: "0.5rem" }}
+              >
+                Scan to connect
+              </p>
+            </div>
+          )}
           {status && (
             <p className="status-text" style={{ marginTop: "1rem" }}>
               {status}
@@ -310,6 +370,31 @@ export function TransferPage() {
                 marginBottom: "1rem",
               }}
             />
+            {showScanner ? (
+              <div style={{ marginBottom: "1rem" }}>
+                <video
+                  ref={videoRef}
+                  style={{ width: "100%", borderRadius: "0.5rem" }}
+                />
+                <button
+                  type="button"
+                  className="btn btn--ghost"
+                  onClick={stopScanner}
+                  style={{ marginTop: "0.5rem" }}
+                >
+                  Cancel Scan
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                className="btn btn--ghost"
+                onClick={startScanner}
+                style={{ marginBottom: "1rem" }}
+              >
+                📷 Scan QR Code
+              </button>
+            )}
             <button
               type="button"
               className="btn btn--primary"

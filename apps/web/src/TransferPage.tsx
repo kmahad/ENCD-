@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import Peer from "peerjs";
+import { QRCodeSVG } from "qrcode.react";
+import { BrowserMultiFormatReader } from "@zxing/library";
 import { DropZone } from "./components/DropZone";
 import { ProgressBar } from "./components/ProgressBar";
 import { downloadBlob, formatBytes, readFileAsBytes } from "./utils";
@@ -13,7 +15,13 @@ export function TransferPage() {
   const [status, setStatus] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [transferProgress, setTransferProgress] = useState(0);
-  const [receivedFile, setReceivedFile] = useState<{ name: string; data: Blob } | null>(null);
+  const [receivedFile, setReceivedFile] = useState<{
+    name: string;
+    data: Blob;
+  } | null>(null);
+  const [showScanner, setShowScanner] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null);
 
   const peerRef = useRef<Peer | null>(null);
   const connectionRef = useRef<any>(null);
@@ -26,7 +34,9 @@ export function TransferPage() {
 
       peer.on("open", (id) => {
         setPeerId(id);
-        setStatus("Waiting for connection... Share your Peer ID with the sender!");
+        setStatus(
+          "Waiting for connection... Share your Peer ID with the sender!",
+        );
       });
 
       peer.on("connection", (conn) => {
@@ -42,7 +52,10 @@ export function TransferPage() {
           if (typeof data === "string" && data.startsWith("fileName:")) {
             fileName = data.split(":")[1];
             setStatus(`Receiving ${fileName}...`);
-          } else if (typeof data === "string" && data.startsWith("totalSize:")) {
+          } else if (
+            typeof data === "string" &&
+            data.startsWith("totalSize:")
+          ) {
             totalSize = parseInt(data.split(":")[1]);
           } else if (data instanceof Uint8Array) {
             receivedChunks.push(data);
@@ -55,7 +68,9 @@ export function TransferPage() {
               fullData.set(chunk, offset);
               offset += chunk.length;
             }
-            const blob = new Blob([fullData], { type: "application/octet-stream" });
+            const blob = new Blob([fullData], {
+              type: "application/octet-stream",
+            });
             setReceivedFile({ name: fileName, data: blob });
             setStatus("File received!");
             setTransferProgress(100);
@@ -134,7 +149,7 @@ export function TransferPage() {
       connectionRef.current.send(chunk);
       setTransferProgress(Math.round(((i + 1) / totalChunks) * 100));
       // Small delay to avoid overwhelming the connection
-      await new Promise(resolve => setTimeout(resolve, 1));
+      await new Promise((resolve) => setTimeout(resolve, 1));
     }
 
     connectionRef.current.send("done");
@@ -147,17 +162,53 @@ export function TransferPage() {
     setTransferProgress(0);
     setReceivedFile(null);
     setRemotePeerId("");
+    setShowScanner(false);
     if (connectionRef.current) {
       connectionRef.current.close();
       connectionRef.current = null;
     }
+    if (codeReaderRef.current) {
+      codeReaderRef.current.reset();
+    }
+  };
+
+  const startScanner = async () => {
+    try {
+      setShowScanner(true);
+      const codeReader = new BrowserMultiFormatReader();
+      codeReaderRef.current = codeReader;
+      const result = await codeReader.decodeOnceFromVideoDevice(
+        undefined,
+        videoRef.current!,
+      );
+      if (result) {
+        setRemotePeerId(result.text);
+        setShowScanner(false);
+        codeReader.reset();
+      }
+    } catch (err) {
+      console.error("QR scan error:", err);
+      setStatus(
+        "Error scanning QR code. Please try again or enter Peer ID manually.",
+      );
+      setShowScanner(false);
+    }
+  };
+
+  const stopScanner = () => {
+    if (codeReaderRef.current) {
+      codeReaderRef.current.reset();
+    }
+    setShowScanner(false);
   };
 
   return (
     <section className="panel animate-fade-in">
       <div className="panel__title-area">
         <h2>Transfer Encrypted Files</h2>
-        <p className="panel__subtitle">Peer-to-peer file transfer with end-to-end encryption</p>
+        <p className="panel__subtitle">
+          Peer-to-peer file transfer with end-to-end encryption
+        </p>
       </div>
 
       <div className="mode-tabs">
@@ -186,18 +237,52 @@ export function TransferPage() {
       {mode === "receive" && (
         <div className="settings-card">
           <h3>Your Peer ID</h3>
-          <p className="status-text" style={{ wordBreak: "break-all", fontFamily: "monospace", background: "#1a1a2e", padding: "1rem", borderRadius: "0.5rem" }}>
+          <p
+            className="status-text"
+            style={{
+              wordBreak: "break-all",
+              fontFamily: "monospace",
+              background: "#1a1a2e",
+              padding: "1rem",
+              borderRadius: "0.5rem",
+            }}
+          >
             {peerId || "Generating..."}
           </p>
+          {peerId && (
+            <div
+              style={{
+                marginTop: "1rem",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                background: "white",
+                padding: "1rem",
+                borderRadius: "0.5rem",
+              }}
+            >
+              <QRCodeSVG value={peerId} size={200} />
+              <p
+                className="status-text"
+                style={{ color: "black", marginTop: "0.5rem" }}
+              >
+                Scan to connect
+              </p>
+            </div>
+          )}
           {status && <p className="status-text">{status}</p>}
-          {transferProgress > 0 && <ProgressBar value={transferProgress} label="Receiving..." />}
+          {transferProgress > 0 && (
+            <ProgressBar value={transferProgress} label="Receiving..." />
+          )}
           {receivedFile && (
             <div style={{ marginTop: "1rem" }}>
               <p className="status-text">Received: {receivedFile.name}</p>
               <button
                 type="button"
                 className="btn btn--primary"
-                onClick={() => downloadBlob(receivedFile.data, receivedFile.name)}
+                onClick={() =>
+                  downloadBlob(receivedFile.data, receivedFile.name)
+                }
               >
                 Download File
               </button>
@@ -215,8 +300,41 @@ export function TransferPage() {
               value={remotePeerId}
               onChange={(e) => setRemotePeerId(e.target.value)}
               placeholder="Paste recipient's Peer ID here"
-              style={{ width: "100%", padding: "0.75rem", borderRadius: "0.5rem", border: "1px solid #2a2a4a", background: "#1a1a2e", color: "white", marginBottom: "1rem" }}
+              style={{
+                width: "100%",
+                padding: "0.75rem",
+                borderRadius: "0.5rem",
+                border: "1px solid #2a2a4a",
+                background: "#1a1a2e",
+                color: "white",
+                marginBottom: "1rem",
+              }}
             />
+            {showScanner ? (
+              <div style={{ marginBottom: "1rem" }}>
+                <video
+                  ref={videoRef}
+                  style={{ width: "100%", borderRadius: "0.5rem" }}
+                />
+                <button
+                  type="button"
+                  className="btn btn--ghost"
+                  onClick={stopScanner}
+                  style={{ marginTop: "0.5rem" }}
+                >
+                  Cancel Scan
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                className="btn btn--ghost"
+                onClick={startScanner}
+                style={{ marginBottom: "1rem" }}
+              >
+                📷 Scan QR Code
+              </button>
+            )}
             <button
               type="button"
               className="btn btn--primary"
@@ -225,7 +343,11 @@ export function TransferPage() {
             >
               Connect
             </button>
-            {status && <p className="status-text" style={{ marginTop: "1rem" }}>{status}</p>}
+            {status && (
+              <p className="status-text" style={{ marginTop: "1rem" }}>
+                {status}
+              </p>
+            )}
           </div>
 
           {connectionRef.current && (
@@ -247,7 +369,9 @@ export function TransferPage() {
                 </div>
               )}
 
-              {transferProgress > 0 && <ProgressBar value={transferProgress} label="Sending..." />}
+              {transferProgress > 0 && (
+                <ProgressBar value={transferProgress} label="Sending..." />
+              )}
 
               <div className="actions">
                 <button
