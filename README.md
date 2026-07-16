@@ -12,6 +12,7 @@ Encrypt anything — PDFs, images, documents, or entire folders — with a passw
 - Decrypt with password — wrong password is rejected safely
 - Shared `.enc` format works across **web** and **desktop**
 - AES-256-GCM encryption + Argon2id key derivation
+- **Peer-to-Peer (P2P) file transfer** — send encrypted files directly to friends over the internet
 - 100% free and open source
 
 ## Quick start
@@ -54,6 +55,8 @@ pnpm build:desktop
 
 ## How to share encrypted files
 
+### Method 1: Traditional sharing
+
 1. **Encrypt** your file or folder and set a strong password (8+ characters).
 2. **Download** the `.enc` file.
 3. **Send** the `.enc` file to your friend (any method you like).
@@ -61,6 +64,14 @@ pnpm build:desktop
 5. Your friend opens the **web app** or **desktop app**, uploads/opens the `.enc` file, enters the password, and downloads the original content.
 
 > **Tip:** Never send the password in the same message as the file.
+
+### Method 2: Peer-to-Peer (P2P) transfer
+
+1. Both you and your friend open the **web app** or **desktop app** and go to the "Transfer" tab.
+2. The recipient selects "Receive" and shares their **Peer ID** with you.
+3. You select "Send", enter your friend's Peer ID, and connect.
+4. You select an encrypted file and send it directly to your friend.
+5. Your friend receives the file and decrypts it with the password.
 
 ## Deploy the website (free)
 

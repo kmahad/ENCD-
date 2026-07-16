@@ -189,7 +189,7 @@ export function TransferPage() {
       }
     } else {
       // Fall back to browser download when Tauri isn't available
-      const blob = new Blob([receivedFile.data], {
+      const blob = new Blob([receivedFile.data as unknown as BlobPart], {
         type: "application/octet-stream",
       });
       downloadBlob(blob, receivedFile.name);

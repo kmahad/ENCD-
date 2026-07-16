@@ -6,4 +6,5 @@ target
 *.local
 .env
 .vite
+.vscode
 src-tauri/target
