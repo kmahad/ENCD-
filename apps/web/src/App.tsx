@@ -5,6 +5,7 @@ import { TransferPage } from "./TransferPage";
 import { ActivityPage } from "./ActivityPage";
 import { HelpPage } from "./HelpPage";
 import { CursorLight } from "./components/CursorLight";
+import { trackPageView } from "./analytics";
 
 type Page = "dashboard" | "activity" | "help";
 type SubTab = "encrypt" | "decrypt" | "transfer";
@@ -27,6 +28,15 @@ export default function App() {
       setUserOS("other");
     }
   }, []);
+
+  useEffect(() => {
+    if (page === "dashboard") {
+      trackPageView(`/dashboard/${subTab}`, `Securitas File Lock - ${subTab}`);
+      return;
+    }
+
+    trackPageView(`/${page}`, `Securitas File Lock - ${page}`);
+  }, [page, subTab]);
 
   const getDownloadLink = (os: OS) => {
     switch (os) {
