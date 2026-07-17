@@ -75,6 +75,29 @@ pnpm build:desktop
 
 ## Deploy the website (free)
 
+### Google Analytics / Google tag
+
+The website includes the Google tag for measurement ID `G-851WJ4PVJ7` in
+`apps/web/index.html`.
+
+Because the web app is a React single-page app, tab changes do not reload a new
+HTML page. Virtual page views for the website tabs are sent from
+`apps/web/src/analytics.ts` and wired in `apps/web/src/App.tsx`.
+
+Tracked website views:
+
+- `/dashboard/encrypt`
+- `/dashboard/decrypt`
+- `/dashboard/transfer`
+- `/activity`
+- `/help`
+
+If Google Analytics says the tag was not detected, make sure the tested URL is
+public. Vercel preview deployments can show a Vercel login or SSO protection
+page instead of this app; Google's tester cannot detect the tag through that
+protection page. Disable deployment protection for the preview deployment or
+test the public production domain.
+
 ### GitHub Pages
 
 1. Push this repo to GitHub.
