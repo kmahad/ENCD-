@@ -19,6 +19,8 @@ import {
   saveEncFile,
   writeFileBytes,
   checkPath,
+  openContainingFolder,
+  copyToClipboard,
 } from "./tauri";
 import { generateSecureFilename } from "./utils";
 
@@ -32,6 +34,7 @@ export function EncryptPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [secureNames, setSecureNames] = useState(true);
+  const [savedEncPath, setSavedEncPath] = useState<string | null>(null);
 
   const { addActivity, savePasswords, setSavePasswords } = useActivity();
 
@@ -96,24 +99,36 @@ export function EncryptPage() {
         totalSize = data.byteLength;
         onProgress(40);
         enc = await encryptFile(data, password, displayName);
-        outName = secureNames ? generateSecureFilename() : encOutputName(displayName);
+        outName = secureNames
+          ? generateSecureFilename()
+          : encOutputName(displayName);
       } else {
         const entries = await readFolderEntries(selectedPath);
         totalSize = entries.reduce((sum, e) => sum + e.data.byteLength, 0);
         onProgress(30);
         enc = await encryptFolder(entries, password, displayName);
         onProgress(70);
-        outName = secureNames ? generateSecureFilename() : encOutputName(displayName);
+        outName = secureNames
+          ? generateSecureFilename()
+          : encOutputName(displayName);
       }
 
       const savePath = await saveEncFile(outName);
       if (!savePath) throw new Error("Save cancelled");
 
       await writeFileBytes(savePath, enc);
-      
+      setSavedEncPath(savePath);
+
       // Log activity
-      await addActivity(displayName, "encrypt", mode, totalSize, secureNames, password);
-      
+      await addActivity(
+        displayName,
+        "encrypt",
+        mode,
+        totalSize,
+        secureNames,
+        password,
+      );
+
       onProgress(100);
       return { path: savePath };
     }).catch(() => {});
@@ -125,6 +140,7 @@ export function EncryptPage() {
     setFileCount(0);
     setPassword("");
     setConfirmPassword("");
+    setSavedEncPath(null);
     reset();
   };
 
@@ -132,7 +148,9 @@ export function EncryptPage() {
     <section className="panel animate-fade-in">
       <div className="panel__title-area">
         <h2>Encrypt Your Files</h2>
-        <p className="panel__subtitle">Secure any file or folder with local AES-256-GCM encryption</p>
+        <p className="panel__subtitle">
+          Secure any file or folder with local AES-256-GCM encryption
+        </p>
       </div>
 
       <div className="mode-tabs">
@@ -188,13 +206,18 @@ export function EncryptPage() {
 
       <div className="settings-card">
         <h3>Encryption Settings</h3>
-        
+
         <div className="settings-indicators">
-          <span className={`indicator ${selectedPath ? "indicator--done" : ""}`}>
+          <span
+            className={`indicator ${selectedPath ? "indicator--done" : ""}`}
+          >
             Files Added: {selectedPath ? "✓" : "✗"}
           </span>
-          <span className={`indicator ${password.length >= 8 && password === confirmPassword ? "indicator--done" : ""}`}>
-            Password: {password.length >= 8 && password === confirmPassword ? "✓" : "✗"}
+          <span
+            className={`indicator ${password.length >= 8 && password === confirmPassword ? "indicator--done" : ""}`}
+          >
+            Password:{" "}
+            {password.length >= 8 && password === confirmPassword ? "✓" : "✗"}
           </span>
         </div>
 
@@ -219,7 +242,10 @@ export function EncryptPage() {
             <span className="toggle-switch" />
             <span className="toggle-text">
               <strong>Save Password in Activity Log</strong>
-              <span className="toggle-hint">Locally encrypted under a browser-unique key and stored only on this device</span>
+              <span className="toggle-hint">
+                Locally encrypted under a browser-unique key and stored only on
+                this device
+              </span>
             </span>
           </label>
         </div>
@@ -236,7 +262,9 @@ export function EncryptPage() {
             <span className="toggle-switch" />
             <span className="toggle-text">
               <strong>Secure Filenames</strong>
-              <span className="toggle-hint">Obfuscates output name to protect confidentiality</span>
+              <span className="toggle-hint">
+                Obfuscates output name to protect confidentiality
+              </span>
             </span>
           </label>
         </div>
@@ -244,7 +272,8 @@ export function EncryptPage() {
         {selectedPath && (
           <div className="file-status">
             <span className="status-text">
-              Ready: {mode === "file" ? "1 File" : `${fileCount} Files`} Selected ({displayName})
+              Ready: {mode === "file" ? "1 File" : `${fileCount} Files`}{" "}
+              Selected ({displayName})
             </span>
           </div>
         )}
@@ -253,32 +282,78 @@ export function EncryptPage() {
       {loading && (
         <ProgressBar
           value={progress}
-          label={mode === "folder" ? "Reading, zipping & encrypting…" : "Encrypting file…"}
+          label={
+            mode === "folder"
+              ? "Reading, zipping & encrypting…"
+              : "Encrypting file…"
+          }
         />
       )}
 
       {error && <p className="error-msg">{error}</p>}
 
-      <div className="actions">
-        <button
-          type="button"
-          className="btn btn--primary encrypt-btn"
-          disabled={!canEncrypt}
-          onClick={handleEncrypt}
-        >
-          {loading ? "Encrypting…" : "ENCRYPT & SAVE 🔒"}
-        </button>
-        {selectedPath && (
+      {savedEncPath && (
+        <div className="settings-card">
+          <h3>Transfer Encrypted File</h3>
+          <div className="file-info">
+            <p>
+              <strong>Saved to:</strong>
+            </p>
+            <p className="file-info__path">{savedEncPath}</p>
+          </div>
+          <div className="actions" style={{ marginTop: "1rem" }}>
+            <button
+              type="button"
+              className="btn btn--primary"
+              onClick={async () => {
+                await openContainingFolder(savedEncPath);
+              }}
+            >
+              📂 Open Folder
+            </button>
+            <button
+              type="button"
+              className="btn btn--ghost"
+              onClick={async () => {
+                await copyToClipboard(savedEncPath);
+                alert("File path copied to clipboard!");
+              }}
+            >
+              📋 Copy Path
+            </button>
+            <button
+              type="button"
+              className="btn btn--ghost"
+              onClick={handleReset}
+            >
+              Encrypt Another
+            </button>
+          </div>
+        </div>
+      )}
+
+      {!savedEncPath && (
+        <div className="actions">
           <button
             type="button"
-            className="btn btn--ghost"
-            onClick={handleReset}
-            disabled={loading}
+            className="btn btn--primary encrypt-btn"
+            disabled={!canEncrypt}
+            onClick={handleEncrypt}
           >
-            Clear
+            {loading ? "Encrypting…" : "ENCRYPT & SAVE 🔒"}
           </button>
-        )}
-      </div>
+          {selectedPath && (
+            <button
+              type="button"
+              className="btn btn--ghost"
+              onClick={handleReset}
+              disabled={loading}
+            >
+              Clear
+            </button>
+          )}
+        </div>
+      )}
     </section>
   );
 }

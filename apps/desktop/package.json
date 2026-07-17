@@ -12,8 +12,15 @@
   "dependencies": {
     "@encrypter/crypto-core": "workspace:*",
     "@tauri-apps/api": "^2.2.0",
+    "@tauri-apps/plugin-clipboard-manager": "^2.2.0",
     "@tauri-apps/plugin-dialog": "^2.2.0",
+    "@tauri-apps/plugin-opener": "^2.2.0",
+    "@tauri-apps/plugin-shell": "^2.2.0",
+    "@types/qrcode.react": "^3.0.0",
+    "@zxing/library": "^0.23.0",
     "fflate": "^0.8.2",
+    "peerjs": "^1.5.5",
+    "qrcode.react": "^4.2.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

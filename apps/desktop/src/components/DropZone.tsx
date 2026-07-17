@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
+import { isTauri } from "../tauri";
 
 interface DropZoneProps {
   label: string;
@@ -22,6 +23,8 @@ export function DropZone({
     let unlisten: (() => void) | undefined;
 
     const setup = async () => {
+      if (!isTauri()) return;
+
       try {
         const webview = getCurrentWebview();
         unlisten = await webview.onDragDropEvent((event) => {

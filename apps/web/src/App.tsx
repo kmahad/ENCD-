@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { EncryptPage } from "./EncryptPage";
 import { DecryptPage } from "./DecryptPage";
+import { TransferPage } from "./TransferPage";
 import { ActivityPage } from "./ActivityPage";
 import { HelpPage } from "./HelpPage";
 import { CursorLight } from "./components/CursorLight";
+import { trackPageView } from "./analytics";
 
 type Page = "dashboard" | "activity" | "help";
-type SubTab = "encrypt" | "decrypt";
+type SubTab = "encrypt" | "decrypt" | "transfer";
 type OS = "windows" | "macos" | "linux" | "other";
 
 export default function App() {
@@ -26,6 +28,15 @@ export default function App() {
       setUserOS("other");
     }
   }, []);
+
+  useEffect(() => {
+    if (page === "dashboard") {
+      trackPageView(`/dashboard/${subTab}`, `Securitas File Lock - ${subTab}`);
+      return;
+    }
+
+    trackPageView(`/${page}`, `Securitas File Lock - ${page}`);
+  }, [page, subTab]);
 
   const getDownloadLink = (os: OS) => {
     switch (os) {
@@ -129,12 +140,25 @@ export default function App() {
               >
                 Decrypt
               </button>
+              <button
+                type="button"
+                className={`tab ${subTab === "transfer" ? "tab--active" : ""}`}
+                onClick={() => setSubTab("transfer")}
+              >
+                Transfer
+              </button>
             </nav>
           )}
 
           <main className="main">
             {page === "dashboard" &&
-              (subTab === "encrypt" ? <EncryptPage /> : <DecryptPage />)}
+              (subTab === "encrypt" ? (
+                <EncryptPage />
+              ) : subTab === "decrypt" ? (
+                <DecryptPage />
+              ) : (
+                <TransferPage />
+              ))}
             {page === "activity" && <ActivityPage />}
             {page === "help" && <HelpPage />}
           </main>
@@ -145,9 +169,9 @@ export default function App() {
             <div className="footer__brand-info">
               <span className="footer__brand-title">SECURITAS</span>
               <p className="footer__brand-desc">
-                High-performance, zero-knowledge file and folder encryption.
-                All cryptographic operations happen directly on your CPU using local resources.
-                Your data never gets uploaded to any server.
+                High-performance, zero-knowledge file and folder encryption. All
+                cryptographic operations happen directly on your CPU using local
+                resources. Your data never gets uploaded to any server.
               </p>
             </div>
 
@@ -187,7 +211,8 @@ export default function App() {
 
           <div className="footer__bottom container">
             <p className="footer__copyright">
-              © {new Date().getFullYear()} Securitas File Lock. Released under MIT License.
+              © {new Date().getFullYear()} Securitas File Lock. Released under
+              MIT License.
             </p>
             <p className="footer__badge-note">
               🔒 Local Cryptography (AES-256-GCM + Argon2id)

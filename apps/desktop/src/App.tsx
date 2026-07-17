@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { EncryptPage } from "./EncryptPage";
 import { DecryptPage } from "./DecryptPage";
+import { TransferPage } from "./TransferPage";
 import { ActivityPage } from "./ActivityPage";
 import { HelpPage } from "./HelpPage";
 
 type Page = "dashboard" | "activity" | "help";
-type SubTab = "encrypt" | "decrypt";
+type SubTab = "encrypt" | "decrypt" | "transfer";
 
 export default function App() {
   const [page, setPage] = useState<Page>("dashboard");
@@ -72,11 +73,25 @@ export default function App() {
             >
               Decrypt
             </button>
+            <button
+              type="button"
+              className={`tab ${subTab === "transfer" ? "tab--active" : ""}`}
+              onClick={() => setSubTab("transfer")}
+            >
+              Transfer
+            </button>
           </nav>
         )}
 
         <main className="main">
-          {page === "dashboard" && (subTab === "encrypt" ? <EncryptPage /> : <DecryptPage />)}
+          {page === "dashboard" &&
+            (subTab === "encrypt" ? (
+              <EncryptPage />
+            ) : subTab === "decrypt" ? (
+              <DecryptPage />
+            ) : (
+              <TransferPage />
+            ))}
           {page === "activity" && <ActivityPage />}
           {page === "help" && <HelpPage />}
         </main>
@@ -87,16 +102,17 @@ export default function App() {
           <div className="footer__brand-info">
             <span className="footer__brand-title">SECURITAS</span>
             <p className="footer__brand-desc">
-              Native desktop encryption with zero-knowledge architecture.
-              All cryptographic operations run locally on your machine.
-              Compatible with the web version.
+              Native desktop encryption with zero-knowledge architecture. All
+              cryptographic operations run locally on your machine. Compatible
+              with the web version.
             </p>
           </div>
         </div>
 
         <div className="footer__bottom container">
           <p className="footer__copyright">
-            © {new Date().getFullYear()} Securitas File Lock. Released under MIT License.
+            © {new Date().getFullYear()} Securitas File Lock. Released under MIT
+            License.
           </p>
           <p className="footer__badge-note">
             🔒 Local Cryptography (AES-256-GCM + Argon2id)
